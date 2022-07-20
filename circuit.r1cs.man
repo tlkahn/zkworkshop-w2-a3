@@ -1,0 +1,5 @@
+[  y ] * [  z ] - [  ytimesz ] = 0
+[  equals.out ] * [  ytimesz ] - [  c.in[0] ] = 0
+[  1 - equals.out ] * [ 2 y + z ] - [  w + c.in[0] ] = 0
+[  x ] * [  equals.isz.inv ] - [  equals.out ] = 0
+[  x ] * [  equals.out ] - [ 1 ] = 0
