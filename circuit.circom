@@ -60,4 +60,43 @@ template Multiplier() {
     w <== c.out;
 }
 
-component main = Multiplier();
+template BinaryAnd() {
+    signal input in[2][256];
+    signal output out[256];
+    signal c[256];
+
+    var k;
+
+    var lh = (in[0][0]) & (~in[1][0]);
+    var rh = (~in[0][0]) & (in[1][0]);
+    out[0] <-- lh | rh;
+    out[0] * (1- out[0]) === 0;
+    c[0] <-- in[0][0] & in[1][0];
+    c[0] * (1- c[0]) === 0;
+
+    for (k = 1; k < 256; k++) {
+        var x = in[0][k-1];
+        var y = in[1][k-1];
+        var _c = c[k-1];
+
+        var tmp1 = (x) & (~y) & ~(_c);
+        var tmp2 = (~x) & (y) & ~(_c);
+        var tmp3 = (~x) & (~y) & (_c);
+        var tmp4 = (x) & (y) & (_c);
+
+        out[k] <-- (tmp1) | (tmp2) | (tmp3) | (tmp4);
+        out[k] * (1- out[k]) === 0;
+
+        var tmp5 = (x) & (y) & (~_c);
+        var tmp6 = (x) & (~y) & (_c);
+        var tmp7 = (~x) & (y) & (_c);
+        var tmp8 = (x) & (y) & (_c);
+
+        c[k] <-- (tmp5) | (tmp6) | (tmp7) | (tmp8);
+        c[k] * (1- c[k]) === 0;
+
+    }
+
+}
+
+component main = BinaryAnd();
