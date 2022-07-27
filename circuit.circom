@@ -99,51 +99,63 @@ template DeprecatedBinaryAnd() {
 
 }
 
+template Bits2Num() {
+    signal input in[256];
+    signal output out;
+
+    var result = 0;
+    var base = 1;
+
+    for (var i=0; i < 256; i++) {
+        result += in[i] * base;
+        base = base + base;
+    }
+
+    out <== result;
+
+}
+
+template Num2Bits(n) {
+    signal input cin;
+    signal output out[n];
+    var lc1=0;
+
+    var e2=1;
+    for (var i = 0; i<n; i++) {
+        out[i] <-- (cin >> i) & 1;
+        out[i] * (out[i] -1 ) === 0;
+        lc1 += out[i] * e2;
+        e2 = e2+e2;
+    }
+
+    lc1 === cin;
+}
+
 template BinAdd() {
     signal input in[2][256];
     signal output out[256];
-    signal c[257];
-    signal _in[2][256];
-    signal _out[256];
 
+    var a;
+    var b;
     var k;
-    var total;
-    component ba = BinAdd();
 
-    c[0] <== 0;
+    component b2n1 = Bits2Num();
+    component b2n2 = Bits2Num();
 
     for (k = 0; k < 256; k++) {
-        out[k] <-- in[0][k] ^ in[1][k];
-        out[k] * (1- out[k]) === 0;
-        c[k+1] <-- in[0][k] & in[1][k];
-        c[k+1] * (1- c[k+1]) === 0;
-        _in[0][k] <-- out[k];
-        _in[1][k] <-- c[k];
+        b2n1.in[k] <== in[0][k];
+        b2n2.in[k] <== in[1][k];
     }
 
-    component ct = CalculateTotal(256);
-    for (k = 0; k < 256; k++) {
-        ct.in[k] <== c[k];
-    }
+    a = b2n1.out;
+    b = b2n2.out;
 
-    total = ct.out;
+    component n2b = Num2Bits(256);
 
-    component isz = IsZero();
-
-    isz.in <== total;
-    var isz_out = isz.out;
+    n2b.cin <== a + b;
 
     for (k = 0; k < 256; k++) {
-        ba.in[0][k] <== _in[0][k];
-        ba.in[1][k] <== _in[1][k];
-    }
-
-    for (k = 0; k < 256; k++) {
-        ba.out[k] ==> _out[k];
-    }
-
-    for (k = 0; k < 256; k++) {
-        out[k] <== out[k] * isz_out + _out[k] * (1 - isz_out);
+        n2b.out[k] ==> out[k];
     }
 
 }
