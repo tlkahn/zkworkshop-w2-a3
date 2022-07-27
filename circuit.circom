@@ -60,7 +60,7 @@ template Multiplier() {
     w <== c.out;
 }
 
-template BinaryAnd() {
+template DeprecatedBinaryAnd() {
     signal input in[2][256];
     signal output out[256];
     signal c[256];
@@ -99,4 +99,53 @@ template BinaryAnd() {
 
 }
 
-component main = BinaryAnd();
+template BinAdd() {
+    signal input in[2][256];
+    signal output out[256];
+    signal c[257];
+    signal _in[2][256];
+    signal _out[256];
+
+    var k;
+    var total;
+    component ba = BinAdd();
+
+    c[0] <== 0;
+
+    for (k = 0; k < 256; k++) {
+        out[k] <-- in[0][k] ^ in[1][k];
+        out[k] * (1- out[k]) === 0;
+        c[k+1] <-- in[0][k] & in[1][k];
+        c[k+1] * (1- c[k+1]) === 0;
+        _in[0][k] <-- out[k];
+        _in[1][k] <-- c[k];
+    }
+
+    component ct = CalculateTotal(256);
+    for (k = 0; k < 256; k++) {
+        ct.in[k] <== c[k];
+    }
+
+    total = ct.out;
+
+    component isz = IsZero();
+
+    isz.in <== total;
+    var isz_out = isz.out;
+
+    for (k = 0; k < 256; k++) {
+        ba.in[0][k] <== _in[0][k];
+        ba.in[1][k] <== _in[1][k];
+    }
+
+    for (k = 0; k < 256; k++) {
+        ba.out[k] ==> _out[k];
+    }
+
+    for (k = 0; k < 256; k++) {
+        out[k] <== out[k] * isz_out + _out[k] * (1 - isz_out);
+    }
+
+}
+
+component main = BinAdd();
