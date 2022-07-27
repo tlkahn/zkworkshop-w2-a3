@@ -131,6 +131,53 @@ template Num2Bits(n) {
     lc1 === cin;
 }
 
+// template BooleanAdd() {
+//     signal input in[2];
+//     signal output out;
+
+//     component n2b = Num2Bits(256);
+
+//     var a = in[0];
+//     var b = in[1];
+//     var c = 0;
+//     var s;
+//     var q;
+//     var d = 0;
+//     component isz = IsZero();
+//     component equals = IsEqual();
+//     isz.in <== b;
+//     c = isz.out;
+//     equals.in[0] <== 1;
+//     equals.in[1] <== 0;
+
+//     while (d < 1) {
+//         s = a ^ b;
+//         q = (a & b) << 1;
+//         a = s;
+//         b = q;
+//         isz.in <== b;
+//         c = isz.out;
+//         equals.in[0] <== c;
+//         equals.in[1] <== 1;
+//         d = equals.out;
+//     }
+
+//     out <-- a;
+//     out === in[0] + in[1];
+// }
+
+function badd(a, b) {
+    var s;
+    var c;
+    while (b != 0) {
+        s = a ^ b;
+        c = (a & b) << 1;
+        a = s;
+        b = c;
+    }
+    return a;
+}
+
 template BinAdd() {
     signal input in[2][256];
     signal output out[256];
@@ -152,7 +199,7 @@ template BinAdd() {
 
     component n2b = Num2Bits(256);
 
-    n2b.cin <== a + b;
+    n2b.cin <-- badd(a,  b);
 
     for (k = 0; k < 256; k++) {
         n2b.out[k] ==> out[k];
